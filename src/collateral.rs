@@ -6,6 +6,9 @@ use crate::quote::{Header, Quote};
 use crate::verify::VerifiedReport;
 use crate::QuoteCollateralV3;
 
+#[cfg(feature = "js")]
+use wasm_bindgen::prelude::*;
+
 #[cfg(not(feature = "js"))]
 use core::time::Duration;
 use std::time::SystemTime;
@@ -126,6 +129,18 @@ pub async fn get_collateral_from_pcs(
     .await
 }
 
+#[cfg(feature = "js")]
+#[wasm_bindgen]
+pub async fn get_collateral_js(quote: JsValue) -> Result<JsValue, JsValue> {
+    let quote: Vec<u8> = serde_wasm_bindgen::from_value(quote)
+        .map_err(|_| JsValue::from_str("Failed to decode raw_quote"))?;
+
+    let collateral = get_collateral_from_pcs(&quote).await.unwrap();
+
+    serde_wasm_bindgen::to_value(&collateral)
+        .map_err(|_| JsValue::from_str("Failed to encode collateral"))
+}
+
 /// Get collateral and verify the quote.
 pub async fn get_collateral_and_verify(
     quote: &[u8],
@@ -142,8 +157,15 @@ pub async fn get_collateral_and_verify(
     } else {
         url
     };
+    #[cfg(not(feature = "js"))]
     let timeout = Duration::from_secs(120);
-    let collateral = get_collateral(pccs_url, quote, timeout).await?;
+    let collateral = get_collateral(
+        pccs_url,
+        quote,
+        #[cfg(not(feature = "js"))]
+        timeout,
+    )
+    .await?;
     let now = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .context("Failed to get current time")?

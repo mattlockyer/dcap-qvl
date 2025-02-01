@@ -13,11 +13,11 @@ base64 = { version = "0.22.1", default-features = false, features = ["alloc"] }
 scale = { package = "parity-scale-codec", version = "3.6.12", default-features = false, features = [
     "derive",
 ] }
-scale-info = { version = "2.11.6", default-features = false, features = ["derive"] }
 chrono = { version = "0.4.31", default-features = false, features = [
     "alloc",
     "serde",
 ] }
+scale-info = { version = "2.11.6", default-features = false, features = ["derive"] }
 const-oid = { version = "0.9.5", default-features = false }
 x509-cert = { version = "0.2.4", default-features = false }
 byteorder = { version = "1.5.0", default-features = false }
@@ -26,35 +26,31 @@ asn1_der = { version = "0.7", default-features = false, features = [
     "native_types",
 ] }
 der = { version = "0.7.8", default-features = false, features = ["alloc"] }
-
 log = { version = "0.4.20", default-features = false }
-
 anyhow = { version = "1.0.93", optional = true }
-
-ring = { version = "0.17", default-features = false, features = [
-    "alloc",
+urlencoding = { version = "2", optional = true }
+serde_json = { version = "1.0.133", optional = true, features = [
+    "preserve_order",
 ] }
+serde_bytes = { package = "serde-human-bytes", version = "0.1" }
 reqwest = { version = "0.12.9", optional = true, default-features = false, features = [
     "rustls-tls",
     "blocking",
     "hickory-dns",
 ] }
-urlencoding = { version = "2", optional = true }
-serde_json = { version = "1.0.133", optional = true, features = [
-    "preserve_order",
-] }
-tracing = { version = "0.1", optional = true }
-futures = { version = "0.3", optional = true }
-getrandom = { version = "0.2", optional = true, features = ["js"] }
 serde-wasm-bindgen = { version = "0.6.5", optional = true}
 wasm-bindgen = { version = "0.2.95", optional = true }
-serde_bytes = { package = "serde-human-bytes", version = "0.1" }
+
+# customization for near contracts
+borsh = { version = "1.0.0", features = ["derive"] }
+ring = { git = "https://github.com/mattlockyer/ring", default-features = false, optional = true }
+wasm-bindgen-futures = "0.4.50"
 
 [dependencies.webpki]
-version = "0.102.8"
+git = "https://github.com/mattlockyer/webpki"
 package = "rustls-webpki"
 default-features = false
-features = ["alloc", "ring"]
+features = ["near-wasm"]
 
 [dev-dependencies]
 insta = "1.41.1"
@@ -65,21 +61,23 @@ tokio = { version = "1.41.1", features = ["full"] }
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["std", "report"]
+default = ["std"]
 std = [
     "serde/std",
     "scale/std",
     "scale-info/std",
-    "ring/std",
     "webpki/std",
+    "ring/alloc",
     "const-oid/std",
     "pem/std",
     "asn1_der/std",
     "der/std",
     "serde_json",
     "anyhow",
-    "reqwest",
     "urlencoding",
 ]
-report = ["std", "tracing", "futures"]
-js = ["ring/wasm32_unknown_unknown_js", "getrandom", "serde-wasm-bindgen", "wasm-bindgen"]
+report = ["std", "reqwest"]
+js = ["std", "report", "serde-wasm-bindgen", "wasm-bindgen"]
+
+[profile.release]
+strip = true

@@ -17,6 +17,7 @@ install_wasm_tool:
 build_web_pkg: install_wasm_tool
 	@echo "Building for web browsers..."
 	$(BUILD_WEB)
+	cp -rf /home/matt/Projects/mattlockyer/dcap-qvl/pkg/web/dcap-qvl-web_bg.wasm /home/matt/Projects/mattlockyer/near-dcap/contract/target/near/contract.wasm
 
 build_node_pkg: install_wasm_tool
 	@echo "Building for Node.js..."

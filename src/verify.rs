@@ -38,10 +38,8 @@ pub fn js_verify(
     let quote_collateral = QuoteCollateralV3::decode(&mut quote_collateral_bytes.as_slice())
         .map_err(|_| JsValue::from_str("Failed to decode quote_collateral_bytes"))?;
 
-    let verified_report = verify(&raw_quote, &quote_collateral, now).map_err(|e| {
-        serde_wasm_bindgen::to_value(&e)
-            .unwrap_or_else(|_| JsValue::from_str("Failed to encode Error"))
-    })?;
+    let verified_report = verify(&raw_quote, &quote_collateral, now)
+        .map_err(|_| JsValue::from_str("Failed to encode Error"))?;
 
     serde_wasm_bindgen::to_value(&verified_report)
         .map_err(|_| JsValue::from_str("Failed to encode verified_report"))
@@ -72,12 +70,13 @@ pub fn verify(
     let tcb_info = serde_json::from_str::<TcbInfo>(&quote_collateral.tcb_info)
         .context("Failed to decode TcbInfo")?;
 
-    let next_update = chrono::DateTime::parse_from_rfc3339(&tcb_info.next_update)
-        .ok()
-        .context("Failed to parse next update")?;
-    if now > next_update.timestamp() as u64 {
-        bail!("TCBInfo expired");
-    }
+    // let next_update = chrono::DateTime::parse_from_rfc3339(&tcb_info.next_update)
+    //     .ok()
+    //     .context("Failed to parse next update")?;
+
+    // if now > next_update.timestamp() as u64 {
+    //     bail!("TCBInfo expired");
+    // }
 
     let now_in_milli = now * 1000;
 

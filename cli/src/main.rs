@@ -1,6 +1,8 @@
 //! CLI for dcap-qvl
 //! Usage:
 //! dcap-qvl decode-quote [--hex] <quote_file>
+//!
+//! cargo run collateral 1.bin
 
 use std::path::PathBuf;
 
@@ -22,6 +24,8 @@ enum Commands {
     Decode(DecodeQuoteArgs),
     /// Verify a quote file
     Verify(VerifyQuoteArgs),
+    /// Get quote collateral
+    Collateral(CollateralQuoteArgs),
 }
 
 #[derive(Args)]
@@ -35,6 +39,15 @@ struct DecodeQuoteArgs {
 
 #[derive(Args)]
 struct VerifyQuoteArgs {
+    /// Indicate the quote file is in hex format
+    #[arg(long)]
+    hex: bool,
+    /// The quote file
+    quote_file: PathBuf,
+}
+
+#[derive(Args)]
+struct CollateralQuoteArgs {
     /// Indicate the quote file is in hex format
     #[arg(long)]
     hex: bool,
@@ -83,6 +96,43 @@ async fn command_verify_quote(args: VerifyQuoteArgs) -> Result<()> {
     Ok(())
 }
 
+#[derive(Debug)]
+pub struct QuoteCollateralV3Json {
+    tcb_info_issuer_chain: String,
+    tcb_info: String,
+    tcb_info_signature: String,
+    qe_identity_issuer_chain: String,
+    qe_identity: String,
+    qe_identity_signature: String,
+}
+
+async fn command_collateral_quote(args: CollateralQuoteArgs) -> Result<()> {
+    let quote = std::fs::read(args.quote_file).context("Failed to read quote file")?;
+    let quote = hex_decode(&quote, args.hex)?;
+    let pccs_url = std::env::var("PCCS_URL").unwrap_or_default();
+    let collateral = if pccs_url.is_empty() {
+        eprintln!("Getting collateral from PCS...");
+        get_collateral_from_pcs(&quote, std::time::Duration::from_secs(60)).await?
+    } else {
+        eprintln!("Getting collateral from {pccs_url}");
+        get_collateral(&pccs_url, &quote, std::time::Duration::from_secs(60)).await?
+    };
+
+    let json = QuoteCollateralV3Json {
+        tcb_info_issuer_chain: collateral.tcb_info_issuer_chain,
+        tcb_info: collateral.tcb_info,
+        tcb_info_signature: hex::encode(&collateral.tcb_info_signature),
+        qe_identity_issuer_chain: collateral.qe_identity_issuer_chain,
+        qe_identity: collateral.qe_identity,
+        qe_identity_signature: hex::encode(&collateral.qe_identity_signature),
+    };
+
+    std::fs::write("quote_collateral.json", format!("{:?}", json));
+
+    println!("{:?}", json);
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -91,5 +141,8 @@ async fn main() -> Result<()> {
         Commands::Verify(args) => command_verify_quote(args)
             .await
             .context("Failed to verify quote"),
+        Commands::Collateral(args) => command_collateral_quote(args)
+            .await
+            .context("Failed to decode quote"),
     }
 }
