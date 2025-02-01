@@ -127,7 +127,9 @@ async fn command_collateral_quote(args: CollateralQuoteArgs) -> Result<()> {
         qe_identity_signature: hex::encode(&collateral.qe_identity_signature),
     };
 
-    std::fs::write("quote_collateral.json", format!("{:?}", json));
+    let out_str = format!("{:?}", json).to_string();
+    let (_, out) = out_str.split_at(22);
+    std::fs::write("quote_collateral.json", out);
 
     println!("{:?}", json);
     Ok(())
