@@ -108,7 +108,8 @@ pub struct QuoteCollateralV3Json {
 
 async fn command_collateral_quote(args: CollateralQuoteArgs) -> Result<()> {
     let quote = std::fs::read(args.quote_file).context("Failed to read quote file")?;
-    let quote = hex_decode(&quote, args.hex)?;
+    let quote = hex_decode(&quote, true)?;
+
     let pccs_url = std::env::var("PCCS_URL").unwrap_or_default();
     let collateral = if pccs_url.is_empty() {
         eprintln!("Getting collateral from PCS...");
@@ -129,9 +130,9 @@ async fn command_collateral_quote(args: CollateralQuoteArgs) -> Result<()> {
 
     let out_str = format!("{:?}", json).to_string();
     let (_, out) = out_str.split_at(22);
-    std::fs::write("quote_collateral.json", out);
 
-    println!("{:?}", json);
+    let _ = std::fs::write("quote_collateral.json", out);
+
     Ok(())
 }
 
