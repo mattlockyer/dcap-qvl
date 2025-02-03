@@ -38,24 +38,10 @@
 #[macro_use]
 extern crate alloc;
 
-use borsh::{BorshDeserialize, BorshSerialize};
 use scale::{Decode, Encode};
-use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(
-    Encode,
-    Decode,
-    Clone,
-    PartialEq,
-    Eq,
-    Debug,
-    Serialize,
-    Deserialize,
-    BorshDeserialize,
-    BorshSerialize,
-    JsonSchema,
-)]
+#[derive(Encode, Decode, Clone, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct QuoteCollateralV3 {
     pub tcb_info_issuer_chain: String,
     pub tcb_info: String,

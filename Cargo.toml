@@ -42,8 +42,6 @@ serde-wasm-bindgen = { version = "0.6.5", optional = true}
 wasm-bindgen = { version = "0.2.95", optional = true }
 
 # customization for near contracts
-schemars = { version = "0.8.8" }
-borsh = { version = "1.0.0", features = ["derive"] }
 ring = { git = "https://github.com/mattlockyer/ring", default-features = false, optional = true }
 wasm-bindgen-futures = "0.4.50"
 
