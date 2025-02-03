@@ -40,6 +40,7 @@ extern crate alloc;
 
 use borsh::{BorshDeserialize, BorshSerialize};
 use scale::{Decode, Encode};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(
@@ -53,15 +54,14 @@ use serde::{Deserialize, Serialize};
     Deserialize,
     BorshDeserialize,
     BorshSerialize,
+    JsonSchema,
 )]
 pub struct QuoteCollateralV3 {
     pub tcb_info_issuer_chain: String,
     pub tcb_info: String,
-    #[serde(with = "serde_bytes")]
     pub tcb_info_signature: Vec<u8>,
     pub qe_identity_issuer_chain: String,
     pub qe_identity: String,
-    #[serde(with = "serde_bytes")]
     pub qe_identity_signature: Vec<u8>,
 }
 
