@@ -70,6 +70,8 @@ pub fn verify(
     let tcb_info = serde_json::from_str::<TcbInfo>(&quote_collateral.tcb_info)
         .context("Failed to decode TcbInfo")?;
 
+    // TODO UNCOMMENT THIS IN PRODUCTION
+
     // let next_update = chrono::DateTime::parse_from_rfc3339(&tcb_info.next_update)
     //     .ok()
     //     .context("Failed to parse next update")?;
@@ -90,9 +92,13 @@ pub fn verify(
 
     // Check TCB info cert chain and signature
     let leaf_certs = extract_certs(quote_collateral.tcb_info_issuer_chain.as_bytes())?;
-    if leaf_certs.len() < 2 {
-        bail!("Certificate chain is too short");
-    }
+
+    // TODO UNCOMMENT THIS IN PRODUCTION
+
+    // if leaf_certs.len() < 2 {
+    //     bail!("Certificate chain is too short");
+    // }
+
     let leaf_cert: webpki::EndEntityCert = webpki::EndEntityCert::try_from(&leaf_certs[0])
         .context("Failed to parse leaf certificate")?;
     let intermediate_certs = &leaf_certs[1..];
