@@ -92,13 +92,9 @@ pub fn verify(
 
     // Check TCB info cert chain and signature
     let leaf_certs = extract_certs(quote_collateral.tcb_info_issuer_chain.as_bytes())?;
-
-    // TODO UNCOMMENT THIS IN PRODUCTION
-
-    // if leaf_certs.len() < 2 {
-    //     bail!("Certificate chain is too short");
-    // }
-
+    if leaf_certs.len() < 2 {
+        bail!("Certificate chain is too short");
+    }
     let leaf_cert: webpki::EndEntityCert = webpki::EndEntityCert::try_from(&leaf_certs[0])
         .context("Failed to parse leaf certificate")?;
     let intermediate_certs = &leaf_certs[1..];
